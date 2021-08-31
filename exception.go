@@ -2,6 +2,7 @@ package exception
 
 import (
 	"errors"
+
 	goErrors "github.com/go-errors/errors"
 )
 
@@ -31,6 +32,7 @@ func GoErrorParser(err error, code int, skipTrace int) *StandardException {
 		message: e.Error(),
 		code:    code,
 		traces:  GoErrorTraceParser(e, skipTrace),
+		err:     err,
 	}
 }
 
@@ -46,6 +48,7 @@ type Exception interface {
 	File() string
 	Line() int
 	Traces() []Trace
+	GetError() error
 }
 
 type HttpException interface {
@@ -76,6 +79,7 @@ type StandardException struct {
 	message string
 	code    int
 	traces  []Trace
+	err     error
 }
 
 func (e *StandardException) Error() string {
@@ -104,6 +108,15 @@ func (e *StandardException) Line() int {
 
 func (e *StandardException) Traces() []Trace {
 	return e.traces
+}
+
+func (e *StandardException) GetError() error {
+	if e.err != nil {
+		return e.err
+	}
+
+	e.err = errors.New(e.Error())
+	return e
 }
 
 type StandardHttpException struct {
